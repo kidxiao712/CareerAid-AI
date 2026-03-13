@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>性格测评 - CareerAid AI</title>
+    <link rel="stylesheet" href="static/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- 侧边栏 -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="logo">CareerAid AI</div>
+          <div class="tagline">大学生职业规划智能体</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <div class="nav-section-title">核心功能</div>
+            <a class="nav-item" href="upload.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              简历解析
+            </a>
+            <a class="nav-item active" href="test.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              性格测评
+            </a>
+            <a class="nav-item" href="match.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              人岗匹配
+            </a>
+            <a class="nav-item" href="report.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              报告生成
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-section-title">更多</div>
+            <a class="nav-item" href="chat.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              AI对话
+            </a>
+            <a class="nav-item" href="job.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              岗位列表
+            </a>
+          </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+          <div class="user-info" id="userInfo" style="display:none">
+            <div class="user-avatar">U</div>
+            <div class="user-meta">
+              <div class="user-name" id="userName">用户</div>
+              <div class="user-role">学生</div>
+            </div>
+          </div>
+          <a href="login.html" class="btn btn-primary" style="width:100%;margin-top:12px" id="loginBtn">立即登录</a>
+          <button class="btn btn-danger" style="width:100%;margin-top:12px;display:none" id="logoutBtn">退出登录</button>
+        </div>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="main-content">
+        <header class="topbar">
+          <button class="menu-toggle" id="menuToggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1 class="topbar-title">性格测评</h1>
+          <div class="topbar-actions">
+            <span class="badge badge-secondary">Big Five 简版</span>
+          </div>
+        </header>
+
+        <div class="page-content">
+          <!-- 非对称布局 -->
+          <div class="asymmetric-grid reverse">
+            <!-- 左侧：测评结果 -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">测评结果</h2>
+                  <p class="card-subtitle">五维人格画像</p>
+                </div>
+                <!-- 独特插画 - 五维人格雷达 -->
+                <svg width="80" height="80" viewBox="0 0 80 80" class="illustration" style="opacity: 0.9;">
+                  <!-- 五边形雷达图轮廓 -->
+                  <polygon points="40,8 70,25 60,60 20,60 10,25" stroke="var(--primary)" stroke-width="3" fill="var(--primary-light)"/>
+                  <polygon points="40,20 58,30 52,50 28,50 22,30" stroke="#000" stroke-width="2" fill="var(--primary)" fill-opacity="0.3"/>
+                  <!-- 五个维度点 -->
+                  <circle cx="40" cy="8" r="4" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="70" cy="25" r="4" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="60" cy="60" r="4" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="20" cy="60" r="4" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="10" cy="25" r="4" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <!-- 连接线 -->
+                  <line x1="40" y1="8" x2="40" y2="40" stroke="#000" stroke-width="1" stroke-dasharray="2,2"/>
+                  <line x1="70" y1="25" x2="40" y2="40" stroke="#000" stroke-width="1" stroke-dasharray="2,2"/>
+                  <line x1="60" y1="60" x2="40" y2="40" stroke="#000" stroke-width="1" stroke-dasharray="2,2"/>
+                  <line x1="20" y1="60" x2="40" y2="40" stroke="#000" stroke-width="1" stroke-dasharray="2,2"/>
+                  <line x1="10" y1="25" x2="40" y2="40" stroke="#000" stroke-width="1" stroke-dasharray="2,2"/>
+                  <!-- 中心点 -->
+                  <circle cx="40" cy="40" r="5" fill="#000"/>
+                </svg>
+              </div>
+              
+              <div class="form-hint">提交后会保存到 <code>students.personality_test_json</code></div>
+              <div class="hr"></div>
+              
+              <!-- 空状态 - 独特插画 -->
+              <div id="emptyState" style="text-align:center;padding:40px 20px">
+                <svg width="140" height="120" viewBox="0 0 140 120" class="illustration" style="margin-bottom:16px;opacity: 0.9;">
+                  <!-- 大脑轮廓 -->
+                  <ellipse cx="70" cy="50" rx="45" ry="35" stroke="var(--primary)" stroke-width="3" fill="var(--primary-light)"/>
+                  <!-- 大脑褶皱 -->
+                  <path d="M35,40 Q50,30 65,40" stroke="#000" stroke-width="2" fill="none"/>
+                  <path d="M40,55 Q55,45 70,55" stroke="#000" stroke-width="2" fill="none"/>
+                  <path d="M50,70 Q65,60 80,70" stroke="#000" stroke-width="2" fill="none"/>
+                  <path d="M75,35 Q90,25 100,35" stroke="#000" stroke-width="2" fill="none"/>
+                  <path d="M85,50 Q100,40 110,50" stroke="#000" stroke-width="2" fill="none"/>
+                  <!-- 五维指示器 -->
+                  <circle cx="30" cy="30" r="6" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="110" cy="30" r="6" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="115" cy="65" r="6" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="70" cy="95" r="6" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="25" cy="65" r="6" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <!-- 问号 -->
+                  <text x="65" y="58" font-family="sans-serif" font-size="24" font-weight="bold" fill="#000">?</text>
+                </svg>
+                <div style="color:var(--text);font-size:14px;font-weight:700">完成测评后将在此显示结果</div>
+                <div style="color:var(--text-muted);font-size:12px;margin-top:8px">五维人格画像 · 职业建议</div>
+              </div>
+              
+              <pre class="mono" id="out" style="white-space:pre-wrap;word-break:break-word;margin:0;display:none"></pre>
+            </div>
+
+            <!-- 右侧：测评题目 -->
+            <div class="card card-featured">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">测评题目</h2>
+                  <p class="card-subtitle">Big Five 人格量表（简版20题）</p>
+                </div>
+              </div>
+              
+              <div class="form-hint" style="margin-bottom:20px">
+                请选择每题的符合程度（1-5）。这是一个简版量表：会给出 5 个维度分数与画像标签，并用于后续匹配与报告建议。
+              </div>
+              
+              <form class="form" id="form">
+                <div id="questions" class="list"></div>
+                
+                <div class="hr"></div>
+                
+                <div class="card card-accent" style="margin-bottom:20px">
+                  <div style="font-weight:700;margin-bottom:8px">实时结果</div>
+                  <div class="form-hint" id="progress">已完成 0/20 题</div>
+                  <pre class="mono" id="result" style="white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font-size:13px"></pre>
+                </div>
+
+                <div class="form-group">
+                  <label>补充说明（可选）</label>
+                  <textarea id="note" placeholder="例如：更希望去某个行业/城市，或对某类岗位有强烈偏好" rows="3"></textarea>
+                </div>
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap">
+                  <button class="btn btn-primary" type="submit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    提交测评
+                  </button>
+                  <a class="btn" href="chat.html">返回对话</a>
+                </div>
+                <div class="form-hint" id="msg"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="static/app.js"></script>
+    <script>
+      // 检查登录状态
+      const token = CareerAid.getToken();
+      const userInfo = document.getElementById('userInfo');
+      const loginBtn = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+      
+      if (token) {
+        userInfo.style.display = 'flex';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+        // 获取用户信息
+        CareerAid.apiFetch('/me').then(data => {
+          const s = data.student || {};
+          document.getElementById('userName').textContent = s.username || '用户';
+          document.querySelector('.user-avatar').textContent = (s.username || 'U')[0].toUpperCase();
+        }).catch(() => {});
+      }
+      
+      // 退出登录
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        CareerAid.clearToken();
+        window.location.href = 'index.html';
+      });
+      
+      // 移动端菜单
+      document.getElementById('menuToggle').addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('open');
+      });
+
+      const msg = document.getElementById('msg');
+      const out = document.getElementById('out');
+      const questionsEl = document.getElementById('questions');
+      const resultEl = document.getElementById('result');
+      const progressEl = document.getElementById('progress');
+      const emptyState = document.getElementById('emptyState');
+
+      const SCALE = [
+        { v: 1, t: "1" },
+        { v: 2, t: "2" },
+        { v: 3, t: "3" },
+        { v: 4, t: "4" },
+        { v: 5, t: "5" },
+      ];
+
+      // Big Five（简版 20 题）：每个维度 4 题，含反向题
+      const QUESTIONS = [
+        { id: "q01", dim: "E", rev: false, text: "我喜欢在团队中与人互动、结识新朋友。" },
+        { id: "q02", dim: "A", rev: false, text: "我愿意体谅他人感受，并尽量避免冲突。" },
+        { id: "q03", dim: "C", rev: false, text: "我做事有计划，能按时完成任务。" },
+        { id: "q04", dim: "N", rev: false, text: "我会因为压力或担忧而影响情绪与专注。" },
+        { id: "q05", dim: "O", rev: false, text: "我乐于尝试新事物，喜欢探索不同领域。" },
+
+        { id: "q06", dim: "E", rev: true, text: "我更倾向于安静独处，社交会让我消耗精力。" },
+        { id: "q07", dim: "A", rev: true, text: "我在合作中更容易挑剔他人，难以妥协。" },
+        { id: "q08", dim: "C", rev: true, text: "我经常拖延，临近截止才开始动手。" },
+        { id: "q09", dim: "N", rev: true, text: "即使遇到困难，我也很少紧张或焦虑。" },
+        { id: "q10", dim: "O", rev: true, text: "我更喜欢稳定熟悉的做法，不太愿意改变。" },
+
+        { id: "q11", dim: "E", rev: false, text: "在公开场合表达观点对我来说比较自然。" },
+        { id: "q12", dim: "A", rev: false, text: "当别人需要帮助时，我通常愿意伸出援手。" },
+        { id: "q13", dim: "C", rev: false, text: "我会把复杂任务拆解成步骤并持续推进。" },
+        { id: "q14", dim: "N", rev: false, text: "遇到不确定时，我会反复担心最坏情况。" },
+        { id: "q15", dim: "O", rev: false, text: "我喜欢创意、审美或新颖的想法。" },
+
+        { id: "q16", dim: "E", rev: true, text: "我不太喜欢成为人群焦点。" },
+        { id: "q17", dim: "A", rev: true, text: "在争论中，我更愿意'赢'而不是'达成共识'。" },
+        { id: "q18", dim: "C", rev: true, text: "我经常丢三落四或忘记重要细节。" },
+        { id: "q19", dim: "N", rev: true, text: "我通常情绪稳定，很少被小事影响。" },
+        { id: "q20", dim: "O", rev: true, text: "相比新点子，我更信赖传统经验与常规流程。" },
+      ];
+
+      const DIM_NAME = {
+        O: "开放性（Open）",
+        C: "尽责性（Conscientious）",
+        E: "外向性（Extraversion）",
+        A: "宜人性（Agreeableness）",
+        N: "神经质（Neuroticism）",
+      };
+
+      const answers = {};
+
+      function clamp(n, a, b) {
+        return Math.max(a, Math.min(b, n));
+      }
+
+      function scoreAnswers() {
+        const dims = { O: [], C: [], E: [], A: [], N: [] };
+        for (const q of QUESTIONS) {
+          const raw = Number(answers[q.id] || 0);
+          if (!raw) continue;
+          const v = clamp(raw, 1, 5);
+          const s = q.rev ? (6 - v) : v;
+          dims[q.dim].push(s);
+        }
+
+        const scores = {};
+        for (const k of Object.keys(dims)) {
+          const arr = dims[k];
+          if (!arr.length) {
+            scores[k] = null;
+            continue;
+          }
+          const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+          scores[k] = Math.round(((avg - 1) / 4) * 100);
+        }
+        return scores;
+      }
+
+      function band(score) {
+        if (score == null) return "未完成";
+        if (score >= 67) return "高";
+        if (score >= 34) return "中";
+        return "低";
+      }
+
+      function summarize(scores) {
+        const tags = [];
+        if (scores.C != null && scores.C >= 67) tags.push("自律执行力强");
+        if (scores.O != null && scores.O >= 67) tags.push("探索与学习驱动");
+        if (scores.E != null && scores.E >= 67) tags.push("外向表达强");
+        if (scores.A != null && scores.A >= 67) tags.push("合作友好");
+        if (scores.N != null && scores.N >= 67) tags.push("压力敏感（需情绪管理）");
+        if (scores.N != null && scores.N <= 33) tags.push("情绪稳定");
+        if (!tags.length) tags.push("画像偏均衡");
+
+        const env = [];
+        if (scores.E != null && scores.E >= 67) env.push("更适合高沟通/对外场景");
+        if (scores.E != null && scores.E <= 33) env.push("更适合深度专注/独立交付");
+        if (scores.C != null && scores.C >= 67) env.push("适合目标清晰、节奏快的岗位");
+        if (scores.O != null && scores.O >= 67) env.push("适合创新/探索型方向");
+        if (scores.N != null && scores.N >= 67) env.push("建议选择支持体系更强的团队");
+
+        return { tags, env };
+      }
+
+      function formatResult(scores, summary) {
+        const lines = [];
+        lines.push("五维结果（0-100）：");
+        for (const k of ["O", "C", "E", "A", "N"]) {
+          const v = scores[k];
+          lines.push(`- ${DIM_NAME[k]}：${v == null ? "—" : v}（${band(v)}）`);
+        }
+        lines.push("");
+        lines.push("画像标签：");
+        for (const t of summary.tags) lines.push(`- ${t}`);
+        if (summary.env.length) {
+          lines.push("");
+          lines.push("职业环境建议：");
+          for (const t of summary.env) lines.push(`- ${t}`);
+        }
+        return lines.join("\n");
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function updateProgress() {
+        const answered = Object.keys(answers).length;
+        progressEl.textContent = `已完成 ${answered}/20 题`;
+        
+        const scores = scoreAnswers();
+        const summary = summarize(scores);
+        resultEl.textContent = formatResult(scores, summary);
+      }
+
+      function renderQuestions() {
+        questionsEl.innerHTML = "";
+        QUESTIONS.forEach((q, idx) => {
+          const wrap = document.createElement("div");
+          wrap.className = "list-item";
+          wrap.style.marginBottom = "16px";
+          wrap.innerHTML =
+            `<div class="list-item-title" style="margin-bottom:12px;font-size:14px">${idx + 1}. ${escapeHtml(q.text)}</div>` +
+            `<div class="scale-options" id="scale-${q.id}"></div>` +
+            `<div class="scale-labels"><span>非常不符合</span><span>非常符合</span></div>`;
+          
+          const scaleContainer = wrap.querySelector(`#scale-${q.id}`);
+          SCALE.forEach(opt => {
+            const btn = document.createElement("div");
+            btn.className = "scale-option";
+            btn.textContent = opt.t;
+            btn.dataset.value = opt.v;
+            btn.addEventListener("click", () => {
+              scaleContainer.querySelectorAll(".scale-option").forEach(b => b.classList.remove("selected"));
+              btn.classList.add("selected");
+              answers[q.id] = opt.v;
+              updateProgress();
+            });
+            scaleContainer.appendChild(btn);
+          });
+          
+          questionsEl.appendChild(wrap);
+        });
+      }
+
+      renderQuestions();
+      updateProgress();
+
+      // 在左侧显示最终结果的函数
+      function displayFinalResult(scores, summary) {
+        emptyState.style.display = 'none';
+        out.style.display = 'block';
+        
+        const lines = [];
+        lines.push("五维结果（0-100）：");
+        for (const k of ["O", "C", "E", "A", "N"]) {
+          const v = scores[k];
+          lines.push(`- ${DIM_NAME[k]}：${v == null ? "—" : v}（${band(v)}）`);
+        }
+        lines.push("");
+        lines.push("画像标签：");
+        for (const t of summary.tags) lines.push(`- ${t}`);
+        if (summary.env.length) {
+          lines.push("");
+          lines.push("职业环境建议：");
+          for (const t of summary.env) lines.push(`- ${t}`);
+        }
+        
+        out.textContent = lines.join("\n");
+      }
+
+      document.getElementById("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const scores = scoreAnswers();
+        const summary = summarize(scores);
+        
+        msg.textContent = "提交中...";
+        try {
+          const data = await CareerAid.apiFetch("/submit_test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              answers,
+              scores,
+              summary,
+              note: document.getElementById("note").value.trim(),
+            }),
+          });
+          msg.textContent = "已保存。";
+          // 在左侧显示格式化结果
+          displayFinalResult(scores, summary);
+        } catch (e) {
+          msg.textContent = "失败：" + (e.message || String(e));
+        }
+      });
+    </script>
+  </body>
+</html>
