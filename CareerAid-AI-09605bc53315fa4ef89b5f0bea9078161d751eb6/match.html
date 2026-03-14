@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>人岗匹配 - CareerAid AI</title>
+    <link rel="stylesheet" href="static/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- 侧边栏 -->
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="logo">CareerAid AI</div>
+          <div class="tagline">大学生职业规划智能体</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <div class="nav-section">
+            <div class="nav-section-title">核心功能</div>
+            <a class="nav-item" href="upload.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              简历解析
+            </a>
+            <a class="nav-item" href="test.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              性格测评
+            </a>
+            <a class="nav-item active" href="match.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              人岗匹配
+            </a>
+            <a class="nav-item" href="report.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              报告生成
+            </a>
+          </div>
+          
+          <div class="nav-section">
+            <div class="nav-section-title">更多</div>
+            <a class="nav-item" href="chat.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              AI对话
+            </a>
+            <a class="nav-item" href="job.html">
+              <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              岗位列表
+            </a>
+          </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+          <div class="user-info" id="userInfo">
+            <div class="user-avatar">U</div>
+            <div class="user-meta">
+              <div class="user-name" id="userName">用户</div>
+              <div class="user-role">学生</div>
+            </div>
+          </div>
+          <button class="btn btn-danger" style="width:100%;margin-top:12px" id="logoutBtn">退出登录</button>
+        </div>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="main-content">
+        <header class="topbar">
+          <button class="menu-toggle" id="menuToggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1 class="topbar-title">人岗匹配</h1>
+          <div class="topbar-actions">
+            <span class="badge badge-secondary">TOP5 岗位推荐</span>
+          </div>
+        </header>
+
+        <div class="page-content">
+          <!-- 非对称布局 -->
+          <div class="asymmetric-grid">
+            <!-- 左侧：岗位列表 -->
+            <div class="card card-featured">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">TOP5 推荐岗位</h2>
+                  <p class="card-subtitle">基于简历和测评的智能匹配</p>
+                </div>
+                <!-- 独特插画 - 人岗匹配 -->
+                <svg width="80" height="80" viewBox="0 0 80 80" class="illustration" style="opacity: 0.9;">
+                  <!-- 人物图标 -->
+                  <circle cx="25" cy="25" r="12" fill="var(--primary-light)" stroke="var(--primary)" stroke-width="2"/>
+                  <rect x="13" y="40" width="24" height="30" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <!-- 连接箭头 -->
+                  <line x1="40" y1="40" x2="55" y2="40" stroke="#000" stroke-width="3"/>
+                  <polygon points="55,35 65,40 55,45" fill="var(--primary)" stroke="#000" stroke-width="1"/>
+                  <!-- 岗位图标 -->
+                  <rect x="68" y="20" width="12" height="50" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <rect x="65" y="15" width="18" height="8" fill="var(--primary)" stroke="#000" stroke-width="1"/>
+                  <!-- 匹配度指示 -->
+                  <circle cx="40" cy="65" r="10" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <text x="36" y="69" font-family="sans-serif" font-size="10" font-weight="bold" fill="#000">%</text>
+                  <!-- 装饰点 -->
+                  <circle cx="50" cy="15" r="4" fill="var(--primary)" stroke="#000" stroke-width="1"/>
+                  <circle cx="15" cy="70" r="3" fill="var(--primary)" stroke="#000" stroke-width="1"/>
+                </svg>
+              </div>
+              
+              <div class="form-group">
+                <label>你的目标（可选）</label>
+                <input id="goal" placeholder="例如：想走数据分析方向，优先互联网/新能源" />
+              </div>
+              
+              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+                <button class="btn btn-primary" id="run">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  开始匹配
+                </button>
+                <a class="btn" href="upload.html">先去解析简历</a>
+              </div>
+              
+              <div class="form-hint" id="msg"></div>
+              
+              <div class="hr"></div>
+              <div class="list" id="list"></div>
+            </div>
+
+            <!-- 右侧：雷达图 -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">维度匹配雷达图</h2>
+                  <p class="card-subtitle">多维度能力分析</p>
+                </div>
+              </div>
+              
+              <div class="form-hint">默认展示 TOP1 的维度匹配度（0-100）。</div>
+              <div class="hr"></div>
+              
+              <!-- 空状态 - 独特插画 -->
+              <div id="emptyState" style="text-align:center;padding:40px 20px">
+                <svg width="160" height="140" viewBox="0 0 160 140" class="illustration" style="margin-bottom:16px;opacity: 0.9;">
+                  <!-- 雷达图背景 -->
+                  <polygon points="80,15 135,45 135,100 80,130 25,100 25,45" stroke="var(--primary)" stroke-width="2" fill="var(--primary-light)" fill-opacity="0.5"/>
+                  <!-- 内层雷达 -->
+                  <polygon points="80,35 110,55 110,90 80,110 50,90 50,55" stroke="#000" stroke-width="1" fill="var(--primary)" fill-opacity="0.2"/>
+                  <!-- 雷达轴线 -->
+                  <line x1="80" y1="15" x2="80" y2="130" stroke="#000" stroke-width="1" stroke-dasharray="4,2"/>
+                  <line x1="25" y1="45" x2="135" y2="100" stroke="#000" stroke-width="1" stroke-dasharray="4,2"/>
+                  <line x1="135" y1="45" x2="25" y2="100" stroke="#000" stroke-width="1" stroke-dasharray="4,2"/>
+                  <!-- 维度标签点 -->
+                  <circle cx="80" cy="15" r="5" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="135" cy="45" r="5" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="135" cy="100" r="5" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="80" cy="130" r="5" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="25" cy="100" r="5" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <circle cx="25" cy="45" r="5" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <!-- 中心点 -->
+                  <circle cx="80" cy="72" r="6" fill="#000"/>
+                  <!-- 装饰元素 -->
+                  <circle cx="145" cy="25" r="8" fill="var(--primary)" stroke="#000" stroke-width="2"/>
+                  <text x="141" y="29" font-family="sans-serif" font-size="8" font-weight="bold" fill="#000">AI</text>
+                </svg>
+                <div style="color:var(--text-muted);font-size:14px;font-weight:600">开始匹配后将显示雷达图</div>
+                <div style="color:var(--text-muted);font-size:12px;margin-top:8px">多维度能力分析 · 智能推荐</div>
+              </div>
+              
+              <div id="radar" style="height:360px;display:none"></div>
+              
+              <div class="hr"></div>
+              
+              <div class="card card-accent">
+                <div style="font-weight:700;margin-bottom:8px">差距分析与建议</div>
+                <pre class="mono" id="gap" style="white-space:pre-wrap;word-break:break-word;margin:0;font-size:13px">点击岗位查看详细分析</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="static/app.js"></script>
+    <script>
+      if (!CareerAid.requireAuth()) throw new Error("not authed");
+      
+      // 加载用户信息
+      CareerAid.apiFetch('/me').then(data => {
+        const s = data.student || {};
+        document.getElementById('userName').textContent = s.username || '用户';
+        document.querySelector('.user-avatar').textContent = (s.username || 'U')[0].toUpperCase();
+      }).catch(() => {});
+      
+      // 退出登录
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        CareerAid.clearToken();
+        window.location.href = 'index.html';
+      });
+      
+      // 移动端菜单
+      document.getElementById('menuToggle').addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('open');
+      });
+
+      const listEl = CareerAid.qs("list");
+      const msgEl = CareerAid.qs("msg");
+      const gapEl = CareerAid.qs("gap");
+      const radarDom = document.getElementById("radar");
+      const emptyState = document.getElementById("emptyState");
+      let radar = null;
+
+      const DIM4 = ["基础要求", "职业技能", "职业素养", "发展潜力"];
+      const DIM10 = ["专业技能", "证书要求", "创新能力", "学习能力", "抗压能力", "沟通能力", "实习能力", "团队协作", "问题解决", "职业稳定性"];
+
+      function initRadar() {
+        if (!radar) {
+          radar = echarts.init(radarDom);
+        }
+      }
+
+      function renderRadar(dim, dim4) {
+        initRadar();
+        emptyState.style.display = 'none';
+        radarDom.style.display = 'block';
+        
+        const use4 = dim4 && Object.keys(dim4).length >= 2;
+        const keys = use4 ? DIM4 : (dim && Object.keys(dim).length >= 5 ? DIM10.slice(0, 6) : DIM4);
+        const vals = use4
+          ? DIM4.map((k) => Number(dim4[k] != null ? dim4[k] : 50))
+          : keys.map((k) => Number(dim && dim[k] != null ? dim[k] : 50));
+        
+        radar.setOption({
+          backgroundColor: "transparent",
+          tooltip: {},
+          radar: {
+            indicator: keys.map((k) => ({ name: k, max: 100 })),
+            splitArea: { areaStyle: { color: ["#f5f7fa", "#ffffff"] } },
+            axisName: { color: "#000", fontWeight: "bold" },
+            splitLine: { lineStyle: { color: "#000", width: 1 } },
+            axisLine: { lineStyle: { color: "#000", width: 2 } },
+          },
+          series: [
+            {
+              type: "radar",
+              data: [
+                {
+                  value: vals,
+                  name: "匹配度",
+                  areaStyle: { color: "rgba(37,99,235,0.3)" },
+                  lineStyle: { color: "#2563eb", width: 3 },
+                  itemStyle: { color: "#2563eb", borderWidth: 2, borderColor: "#000" },
+                },
+              ],
+            },
+          ],
+        });
+      }
+
+      function renderList(matches) {
+        listEl.innerHTML = "";
+        matches.slice(0, 5).forEach((m, idx) => {
+          const div = document.createElement("div");
+          div.className = "item";
+          const d4 = m.dimension_scores_4 || {};
+          const d4Text = Object.keys(d4).length ? (" 四维：" + DIM4.map((k) => k + " " + (d4[k] || 0) + "%").join(" ")) : "";
+          div.innerHTML =
+            '<div class="title">' +
+            (idx + 1) +
+            ". " +
+            CareerAid.escapeHtml(m.job_title) +
+            " <span class='score " +
+            CareerAid.scoreClass(m.score) +
+            "'>" +
+            m.score +
+            "%</span></div>" +
+            '<div class="meta">' +
+            "<span class='badge'>" +
+            CareerAid.escapeHtml(m.industry || "未知行业") +
+            "</span>" +
+            "<span class='badge'>" +
+            CareerAid.escapeHtml(m.salary || "薪资未标注") +
+            "</span>" +
+            (d4Text ? "<span class='badge badge-accent'>" + CareerAid.escapeHtml(d4Text.trim()) + "</span>" : "") +
+            "</div>" +
+            "<div style='display:flex;gap:10px;flex-wrap:wrap;margin-top:10px'>" +
+            "<button class='btn btn-sm' data-idx='" +
+            idx +
+            "'>查看维度/差距</button>" +
+            "</div>";
+          div.querySelector("button").addEventListener("click", () => {
+            renderRadar(m.dimension_scores || {}, m.dimension_scores_4 || {});
+            gapEl.textContent = JSON.stringify(m.gap_analysis || {}, null, 2);
+          });
+          listEl.appendChild(div);
+        });
+      }
+
+      async function run() {
+        msgEl.textContent = "匹配中...";
+        gapEl.textContent = "点击岗位查看详细分析";
+        try {
+          const goal = CareerAid.qs("goal").value.trim();
+          const data = await CareerAid.apiFetch("/match_jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ goal }),
+          });
+          const matches = data.matches || [];
+          msgEl.textContent = "完成。";
+          renderList(matches);
+          if (matches[0]) {
+            renderRadar(matches[0].dimension_scores || {}, matches[0].dimension_scores_4 || {});
+            gapEl.textContent = JSON.stringify(matches[0].gap_analysis || {}, null, 2);
+          } else {
+            if (radar) radar.clear();
+          }
+        } catch (e) {
+          msgEl.textContent = "失败：" + (e.message || String(e));
+          if (radar) radar.clear();
+        }
+      }
+
+      CareerAid.qs("run").addEventListener("click", run);
+      
+      // 窗口大小改变时重新渲染图表
+      window.addEventListener('resize', () => {
+        if (radar) radar.resize();
+      });
+    </script>
+  </body>
+</html>

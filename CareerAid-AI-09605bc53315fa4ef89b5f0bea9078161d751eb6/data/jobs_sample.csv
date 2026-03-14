@@ -1,0 +1,6 @@
+title,industry,salary,requirements_text
+数据分析实习生,互联网/数据,150-200/天,"熟悉Excel/SQL，了解Python数据分析，能做可视化报表；沟通良好。"
+后端开发工程师（校招）,互联网/软件,12-20K,"掌握Python/Java至少一种；熟悉Flask/Django或Spring；理解数据库、缓存；了解Linux与Git。"
+前端开发工程师（校招）,互联网/软件,12-20K,"熟悉JavaScript/TypeScript；掌握React或Vue；了解工程化、性能优化；有作品集优先。"
+产品助理,互联网/产品,10-16K,"具备用户调研与需求分析能力；良好沟通推动；能写PRD；会用原型工具。"
+算法工程师（NLP方向）,AI/算法,18-35K,"熟悉机器学习/深度学习；掌握PyTorch；了解NLP/LLM；具备论文复现与工程落地能力。"
