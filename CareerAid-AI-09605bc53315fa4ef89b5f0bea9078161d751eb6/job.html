@@ -74,9 +74,9 @@
         </header>
 
         <div class="page-content">
-          <!-- 非对称布局 -->
-          <div class="asymmetric-grid">
-            <!-- 左侧：筛选 -->
+          <!-- 垂直布局 -->
+          <div class="vertical-layout">
+            <!-- 上方：筛选 -->
             <div class="card card-featured">
               <div class="card-header">
                 <div>
@@ -107,7 +107,7 @@
               <div class="form-hint" id="msg"></div>
             </div>
 
-            <!-- 右侧：岗位列表 -->
+            <!-- 下方：岗位列表 -->
             <div class="card">
               <div class="card-header">
                 <div>
@@ -141,6 +141,11 @@
               </div>
               
               <div class="list" id="list"></div>
+              
+              <!-- 查看更多按钮 -->
+              <div id="loadMore" style="text-align:center;padding:20px;display:none">
+                <button class="btn btn-primary" id="loadMoreBtn">查看更多</button>
+              </div>
             </div>
           </div>
         </div>
@@ -183,11 +188,126 @@
       const msg = CareerAid.qs("msg");
       const q = CareerAid.qs("q");
       const emptyState = document.getElementById('emptyState');
+      const loadMore = document.getElementById('loadMore');
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      
+      let allJobs = [];
+      let currentIndex = 0;
+      const jobsPerPage = 5;
+
+      // 渲染岗位列表
+      function renderJobs(startIndex, endIndex) {
+        const jobsToShow = allJobs.slice(startIndex, endIndex);
+        
+        for (const j of jobsToShow) {
+          const div = document.createElement("div");
+          div.className = "item";
+          const preview = j.match_preview || null;
+          const score = preview ? Number(preview.score || 0) : null;
+          const qualified = preview ? (preview.qualified !== false) : null;
+          const coverage = preview && typeof preview.skill_coverage === "number" ? preview.skill_coverage : null;
+          const reqCoverage =
+            preview && typeof preview.required_skill_coverage === "number"
+              ? preview.required_skill_coverage
+              : null;
+          div.innerHTML =
+            '<div class="title">' +
+            CareerAid.escapeHtml(j.title) +
+            "</div>" +
+            '<div class="meta">' +
+            "<span class='badge'>" +
+            CareerAid.escapeHtml(j.industry || "未知行业") +
+            "</span>" +
+            "<span class='badge'>" +
+            CareerAid.escapeHtml(j.salary || "薪资未标注") +
+            "</span>" +
+            (preview
+              ? "<span class='badge badge-accent'>匹配预览：<span class='score " +
+                CareerAid.scoreClass(score) +
+                "'>" +
+                score +
+                "%</span></span>" +
+                (qualified === false
+                  ? "<span class='badge badge-warn'>未达关键技能门槛" +
+                    (coverage !== null && reqCoverage !== null
+                      ? "（覆盖率 " + coverage + "% / 要求≥" + reqCoverage + "%）" 
+                      : "") +
+                    "</span>"
+                  : "")
+                : "<span class='badge'>匹配预览：登录并解析简历后可见</span>") +
+            "</div>" +
+            "<div style='margin-top:8px;color:var(--text-muted);font-size:13px;line-height:1.6'>" +
+            CareerAid.escapeHtml((j.requirements_text || "").slice(0, 120)) +
+            (j.requirements_text && j.requirements_text.length > 120 ? "..." : "") +
+            "</div>" +
+            "<div style='display:flex;gap:10px;flex-wrap:wrap;margin-top:12px'>" +
+            "<a class='btn btn-sm' href='match.html'>查看匹配详情</a>" +
+            "<a class='btn btn-sm' href='map.html?title=" +
+            encodeURIComponent(j.title || "") +
+            "'>在图谱中查看</a>" +
+            "<button class='btn btn-sm primary' data-plan='1' data-job-id='" +
+            j.id +
+            "' data-job-title='" +
+            CareerAid.escapeHtml(j.title) +
+            "'>生成提升计划</button>" +
+            "</div>";
+          list.appendChild(div);
+
+          const planBtn = div.querySelector("button[data-plan='1']");
+          if (planBtn) {
+            planBtn.addEventListener("click", async () => {
+              try {
+                const jobId = Number(planBtn.getAttribute("data-job-id"));
+                if (!jobId) throw new Error("岗位ID缺失");
+                planBtn.disabled = true;
+                planBtn.textContent = "生成中...";
+                const data = await CareerAid.apiFetch("/plan_for_target_job", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ job_id: jobId, weekly_hours: 8, prefer_internship: true }),
+                });
+                // 用 alert 简洁展示；后续可升级为弹窗/侧边栏
+                const match = data.match || {};
+                const plan = data.plan || {};
+                const gap = (match.gap_analysis || {});
+                const miss = (gap.missing_skills || []).slice(0, 10).join(", ");
+                const shortTerm = (plan.short_term && plan.short_term.duration) ? plan.short_term.duration : "";
+                const midTerm = (plan.mid_term && plan.mid_term.duration) ? plan.mid_term.duration : "";
+                alert(
+                  "目标岗位提升计划（简版）\n\n" +
+                    "岗位：" + (j.title || "") + "\n" +
+                    "当前匹配度：" + (match.score != null ? match.score + "%" : "—") + "\n" +
+                    (match.qualified === false ? "状态：未达关键技能门槛\n" : "") +
+                    "缺失技能：" + (miss || "—") + "\n\n" +
+                    "短期：" + (shortTerm || "—") + "（产出：学习笔记/小demo/投递台账）\n" +
+                    "中期：" + (midTerm || "—") + "（产出：作品集项目可部署）\n\n" +
+                    "提示：更完整内容在接口返回的 plan 字段中（可用于你后续做弹窗展示）。"
+                );
+              } catch (e) {
+                alert("生成失败：" + (e.message || String(e)));
+              } finally {
+                planBtn.disabled = false;
+                planBtn.textContent = "生成提升计划";
+              }
+            });
+          }
+        }
+        
+        // 显示或隐藏查看更多按钮
+        if (endIndex < allJobs.length) {
+          loadMore.style.display = 'block';
+        } else {
+          loadMore.style.display = 'none';
+        }
+      }
 
       async function load() {
         msg.textContent = "加载中...";
         list.innerHTML = "";
         emptyState.style.display = 'none';
+        loadMore.style.display = 'none';
+        currentIndex = 0;
+        
         const keyword = q.value.trim();
         const authed = Boolean(CareerAid.getToken());
         const url =
@@ -196,49 +316,26 @@
           (authed ? "&include_match=1" : "");
         try {
           const data = await CareerAid.apiFetch(url, { method: "GET" });
-          const jobs = data.jobs || [];
-          msg.textContent = "共 " + jobs.length + " 个岗位";
-          if (jobs.length === 0) {
+          allJobs = data.jobs || [];
+          msg.textContent = "共 " + allJobs.length + " 个岗位";
+          if (allJobs.length === 0) {
             emptyState.style.display = 'block';
             return;
           }
-          for (const j of jobs) {
-            const div = document.createElement("div");
-            div.className = "item";
-            const preview = j.match_preview || null;
-            const score = preview ? Number(preview.score || 0) : null;
-            div.innerHTML =
-              '<div class="title">' +
-              CareerAid.escapeHtml(j.title) +
-              "</div>" +
-              '<div class="meta">' +
-              "<span class='badge'>" +
-              CareerAid.escapeHtml(j.industry || "未知行业") +
-              "</span>" +
-              "<span class='badge'>" +
-              CareerAid.escapeHtml(j.salary || "薪资未标注") +
-              "</span>" +
-              (preview
-                ? "<span class='badge badge-accent'>匹配预览：<span class='score " +
-                  CareerAid.scoreClass(score) +
-                  "'>" +
-                  score +
-                  "%</span></span>"
-                : "<span class='badge'>匹配预览：登录并解析简历后可见</span>") +
-              "</div>" +
-              "<div style='margin-top:8px;color:var(--text-muted);font-size:13px;line-height:1.6'>" +
-              CareerAid.escapeHtml((j.requirements_text || "").slice(0, 120)) +
-              (j.requirements_text && j.requirements_text.length > 120 ? "..." : "") +
-              "</div>" +
-              "<div style='display:flex;gap:10px;flex-wrap:wrap;margin-top:12px'>" +
-              "<a class='btn btn-sm' href='match.html'>查看匹配详情</a>" +
-              "</div>";
-            list.appendChild(div);
-          }
+          
+          // 初始显示前几个岗位
+          renderJobs(0, jobsPerPage);
+          currentIndex = jobsPerPage;
         } catch (e) {
           msg.textContent = "失败：" + (e.message || String(e));
           emptyState.style.display = 'block';
         }
+      }
+      
+      // 加载更多岗位
+      function loadMoreJobs() {
+        renderJobs(currentIndex, currentIndex + jobsPerPage);
+        currentIndex += jobsPerPage;
       }
 
       CareerAid.qs("search").addEventListener("click", load);
@@ -246,6 +343,9 @@
         q.value = "";
         load();
       });
+      
+      // 查看更多按钮点击事件
+      loadMoreBtn.addEventListener("click", loadMoreJobs);
       
       // 初始加载
       load();

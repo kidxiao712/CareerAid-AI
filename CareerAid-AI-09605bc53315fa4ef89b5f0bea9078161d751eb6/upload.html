@@ -73,6 +73,16 @@
           </div>
         </header>
 
+        <!-- 成功提示窗口 -->
+        <div id="successModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+          <div style="background:white;border-radius:var(--radius-md);padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:var(--shadow-lg)">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" style="margin:0 auto 20px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <h3 style="margin-bottom:12px;font-size:18px;font-weight:600">上传成功！</h3>
+            <p style="margin-bottom:24px;color:var(--text-muted)">简历已成功上传并解析完成</p>
+            <button id="closeModal" class="btn btn-primary" style="width:100%">确定</button>
+          </div>
+        </div>
+
         <div class="page-content">
           <!-- 非对称布局 -->
           <div class="asymmetric-grid">
@@ -194,7 +204,7 @@
                 <div style="color:var(--text-muted);font-size:12px;margin-top:8px">AI智能提取 · 能力画像</div>
               </div>
               
-              <pre class="mono" id="out" style="white-space:pre-wrap;word-break:break-word;margin:0;display:none"></pre>
+              <div id="out" style="white-space:pre-wrap;word-break:break-word;margin:0;display:none;padding:20px;border:2px solid var(--border);border-radius:var(--radius-md);background:#f9fafb;font-family:monospace;font-size:14px;line-height:1.7"></div>
             </div>
           </div>
         </div>
@@ -231,6 +241,13 @@
       const msg = CareerAid.qs("msg");
       const out = CareerAid.qs("out");
       const emptyState = document.getElementById('emptyState');
+      const successModal = document.getElementById('successModal');
+      const closeModal = document.getElementById('closeModal');
+      
+      // 关闭成功提示窗口
+      closeModal.addEventListener('click', () => {
+        successModal.style.display = 'none';
+      });
 
       // 格式化显示解析结果
       function formatResumeResult(parsed) {
@@ -380,6 +397,8 @@
           msg.textContent = "解析完成，已保存。";
           // 显示格式化的解析报告
           out.textContent = formatResumeResult(data.resume_parsed || {});
+          // 显示成功提示窗口
+          successModal.style.display = 'flex';
         } catch (err) {
           msg.textContent = "失败：" + (err.message || String(err));
         }

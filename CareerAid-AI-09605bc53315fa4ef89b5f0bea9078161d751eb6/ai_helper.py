@@ -276,6 +276,74 @@ def offline_generate_report(
     return "\n".join(lines)
 
 
+def offline_personality_analysis(
+    resume_profile: dict[str, Any],
+    personality_test: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    性格分析 + 岗位适配 + 短板诊断（离线规则版）。
+    例如：成绩好但内向 -> 诊断沟通/表达短板，推荐可提升方向与适配岗位。
+    """
+    scores = personality_test.get("scores") or {}
+    summary = personality_test.get("summary") or {}
+    note = personality_test.get("note") or ""
+    career_interest = personality_test.get("career_interest") or {}
+    resources = personality_test.get("resources") or []
+
+    dims = resume_profile.get("dimensions") or {}
+    skills = resume_profile.get("skills") or []
+    competitiveness = float(resume_profile.get("competitiveness_score") or 50)
+
+    e = float(scores.get("E") or 50)
+    c = float(scores.get("C") or 50)
+    n = float(scores.get("N") or 50)
+    o = float(scores.get("O") or 50)
+    a = float(scores.get("A") or 50)
+
+    is_introvert = e < 40
+    is_high_grade = competitiveness >= 70 or float(dims.get("专业技能", 50)) >= 65
+    is_anxious = n >= 60
+    is_low_conscientious = c < 45
+
+    shortcomings = []
+    suggestions = []
+    job_fit = []
+
+    if is_high_grade and is_introvert:
+        shortcomings.append("成绩优秀但偏内向，沟通表达、公开演讲可能是短板")
+        suggestions.append("优先提升：小组汇报、模拟面试、1分钟自我介绍；可从小范围分享开始")
+        job_fit.extend(["技术研发、数据分析、算法工程师、后端开发等偏独立交付的岗位"])
+
+    if is_anxious:
+        shortcomings.append("抗压与情绪管理需要关注")
+        suggestions.append("建议选择支持体系较好的团队，并练习正念/时间管理")
+
+    if is_low_conscientious:
+        shortcomings.append("计划性与执行力可加强")
+        suggestions.append("用甘特图拆解目标，设置阶段性检查点，养成复盘习惯")
+
+    if o >= 65:
+        job_fit.extend(["产品、创新方向、研究型岗位"])
+    if a >= 65:
+        job_fit.extend(["项目管理、运营、协作型岗位"])
+
+    job_fit = list(dict.fromkeys(job_fit))[:8]
+    if not shortcomings:
+        shortcomings.append("整体较均衡，可结合兴趣与资源聚焦 1-2 个方向")
+    if not suggestions:
+        suggestions.append("继续巩固核心技能，多参加实习/项目积累经验")
+
+    return {
+        "summary": "；".join(shortcomings),
+        "shortcomings": shortcomings,
+        "suggestions": suggestions,
+        "job_fit": job_fit,
+        "scores_5": scores,
+        "tags": summary.get("tags", []),
+        "env": summary.get("env", []),
+    }
+
+
 def report_completeness_check(content: str) -> dict[str, Any]:
     """报告内容完整性检查，返回缺失章节与建议。"""
     required = ["基本信息", "能力画像", "岗位匹配", "职业目标", "路径", "行动计划", "评估"]
@@ -341,4 +409,25 @@ class AIHelper:
         except Exception:
             pass
         return offline_generate_report(student, top_matches, goal=goal)
+
+    def analyze_personality_for_jobs(
+        self, resume_profile: dict[str, Any], personality_test: dict[str, Any]
+    ) -> dict[str, Any]:
+        """性格分析→岗位适配+短板诊断+可提升建议。LLM 可用则调模型，否则用 offline_personality_analysis。"""
+        system = (
+            "你是职业规划与心理学专家。根据简历能力画像与性格测评（Big Five），"
+            "你必须：1) 诊断短板（如成绩好但内向→沟通表达短板）；2) 推荐适合岗位类型；"
+            "3) 给出可执行的提升建议。输出 JSON：summary、shortcomings、suggestions、job_fit。"
+        )
+        prompt = (
+            f"简历画像：{_safe_json_dumps(resume_profile)}\n\n性格测评：{_safe_json_dumps(personality_test)}\n\n"
+            "输出 JSON：{\"summary\":\"一句话\",\"shortcomings\":[],\"suggestions\":[],\"job_fit\":[]}"
+        )
+        try:
+            data = self.client.chat_json(system, prompt, schema_hint="")
+            if isinstance(data, dict) and "shortcomings" in data:
+                return data
+        except Exception:
+            pass
+        return offline_personality_analysis(resume_profile, personality_test)
 

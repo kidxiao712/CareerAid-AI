@@ -15,6 +15,16 @@ from docx import Document as DocxDocument
 from ai_client import AIClient
 from ai_helper import AIHelper, _safe_json_dumps
 from career_graph import build_echarts_data, list_all_families
+from context_memory import (
+    add_key_fact,
+    get as get_context,
+    set_personality_diagnosis,
+    set_profile_summary,
+    set_regret_result,
+    to_context_string,
+)
+from game_theory import regret_matching_from_profile
+from knowledge import search_knowledge
 from database import db
 from models import Student, Job, MatchResult, Report, ChatMessage
 
@@ -187,6 +197,10 @@ def upload_resume():
     student.resume_parsed_json = _safe_json_dumps(parsed)
     db.session.commit()
 
+    # 轻量级记忆：画像摘要，供 Agent 上下文联系
+    summary = f"专业:{student.major or '未知'}；技能:{','.join((parsed.get('skills') or [])[:8])}；竞争力:{parsed.get('competitiveness_score','—')}"
+    set_profile_summary(student.id, summary)
+
     # 写入一条 AI 引导消息（回到 chat.html 不丢失）
     db.session.add(
         ChatMessage(
@@ -207,6 +221,16 @@ def submit_test():
     student.personality_test_json = _safe_json_dumps(payload)
     db.session.commit()
 
+    # 性格分析 → 短板诊断 + 岗位适配，写入轻量级记忆（上下文联系）
+    try:
+        resume_profile = json.loads(student.resume_parsed_json or "{}")
+    except Exception:
+        resume_profile = {}
+    personality_test = payload
+    ai = _get_ai()
+    diag = ai.analyze_personality_for_jobs(resume_profile, personality_test)
+    set_personality_diagnosis(student.id, diag)
+
     db.session.add(
         ChatMessage(
             student_id=student.id,
@@ -215,7 +239,7 @@ def submit_test():
         )
     )
     db.session.commit()
-    return jsonify({"ok": True, "student_id": student.id})
+    return jsonify({"ok": True, "student_id": student.id, "personality_diagnosis": diag})
 
 
 @api.route("/jobs", methods=["GET"])
@@ -478,7 +502,53 @@ def chat_send():
     ai = _get_ai()
     client = ai.client
 
-    # 拼接上下文：学生画像 + 最近对话
+    # 轻量级记忆：先用 LLM 做一句话关键信息摘要，失败则用关键词匹配兜底
+    try:
+        summary = client.chat_text(
+            "你是信息抽取助手，请用不超过一句话的中文提炼这段话的关键信息。",
+            f"用户原话：{user_text}",
+        )
+        if summary:
+            add_key_fact(student.id, summary.strip())
+    except Exception:
+        key_phrases = ["成绩", "内向", "外向", "压力", "家庭", "考研", "保研", "大厂", "国企", "实习", "项目", "证书", "迷茫", "焦虑"]
+        for p in key_phrases:
+            if p in user_text:
+                add_key_fact(student.id, f"用户提及：{user_text[:80]}...")
+                break
+
+    # 博弈模型：Regret Matching 计算最优路径（大厂/国企/保研）
+    combined = {"dimensions": {}, "personality": {}}
+    try:
+        rp = json.loads(student.resume_parsed_json or "{}")
+        combined["dimensions"] = rp.get("dimensions") or {}
+        combined["competitiveness_score"] = rp.get("competitiveness_score") or 50
+    except Exception:
+        pass
+    try:
+        pt = json.loads(student.personality_test_json or "{}")
+        s = pt.get("scores") or {}
+        combined["personality"] = {k: v for k, v in s.items()}
+        combined["career_interest"] = pt.get("career_interest") or {}
+        combined["resources"] = pt.get("resources") or []
+        combined["constraints"] = pt.get("constraints") or {}
+    except Exception:
+        pass
+
+    # 即时偏好：更想稳定 / 不想出国 等（影响博弈参数）
+    prefs: dict[str, bool] = {}
+    if "稳定" in user_text or "体制" in user_text or "编制" in user_text:
+        prefs["prefer_stable"] = True
+    if "不想出国" in user_text or "不想海外" in user_text or "留在国内" in user_text:
+        prefs["avoid_abroad"] = True
+    combined["user_prefs"] = prefs
+    try:
+        regret_res = regret_matching_from_profile(combined)
+        set_regret_result(student.id, regret_res)
+    except Exception:
+        regret_res = None
+
+    # 拼接上下文：记忆模块 + 博弈结果 + 学生画像 + 最近对话
     history_rows = (
         db.session.query(ChatMessage)
         .filter(ChatMessage.student_id == student.id)
@@ -488,7 +558,7 @@ def chat_send():
     )
     history = list(reversed(history_rows))
 
-    # 简易联网搜索：当用户询问“市场要求/竞赛/趋势/怎么学”等，补充检索摘要
+    # 简易联网搜索 + 本地知识库：当用户询问“市场要求/竞赛/趋势/怎么学”等，补充检索摘要
     search_block = ""
     keywords = ["市场", "趋势", "要求", "竞赛", "证书", "学习路线", "怎么学", "什么是", "是什么"]
     if any(k in user_text for k in keywords):
@@ -496,14 +566,24 @@ def chat_send():
         if results:
             lines = [f"- {r.get('title','')}（{r.get('url','')}）" for r in results]
             search_block = "【联网检索参考】\n" + "\n".join(lines) + "\n"
+        # 本地知识库（轻量 RAG）
+        local_snips = search_knowledge(user_text, max_chunks=3)
+        if local_snips:
+            ls = [s.get("snippet", "") for s in local_snips]
+            search_block += "【本地知识库参考】\n" + "\n---\n".join(ls[:3]) + "\n"
 
     system_prompt = (
-        "你是大学生 AI 职业规划助手。你的目标：\n"
-        "1) 帮学生快速了解就业市场/岗位能力要求并可拆解；\n"
-        "2) 准确分析学生就业能力与意愿；\n"
-        "3) 给出明确可操作的建议（行动计划、补齐差距、作品集/投递/面试策略）。\n\n"
-        "要求：输出中文；回答要具体、可执行、可解释；尽量引用“数据/事实/来源链接”（若提供了联网检索参考）。\n"
+        "你是温暖、专业的大学生 AI 职业规划助手，像一位关心你的学长/学姐。"
+        "你的目标：1) 帮学生快速了解就业市场/岗位能力要求；2) 准确分析就业能力与意愿；"
+        "3) 给出明确可操作的建议。要求：语气亲切、有共情，同时专业、可执行；"
+        "若系统提供了【性格与短板诊断】或【博弈路径建议】，务必结合这些信息综合给出最优建议。"
+        "输出中文。\n"
     )
+
+    memory_block = to_context_string(student.id)
+    regret_block = ""
+    if regret_res:
+        regret_block = f"\n【博弈路径建议（Regret Matching）】最优路径：{regret_res.best_action}；{regret_res.recommendation}"
 
     context = {
         "student": student.to_dict(),
@@ -514,9 +594,10 @@ def chat_send():
     }
     user_prompt = (
         f"{search_block}"
+        f"{memory_block}\n{regret_block}\n\n"
         f"【学生信息与画像】\n{_safe_json_dumps(context)}\n\n"
         f"【本轮用户问题】\n{user_text}\n\n"
-        "请结合学生画像与对话历史回答，并给出下一步操作引导（例如：去简历上传/性格测评/岗位列表/报告生成）。"
+        "请结合记忆、性格诊断、博弈路径建议与对话历史，亲切、专业地回答，并给出下一步操作引导。"
     )
 
     reply = ""

@@ -75,10 +75,10 @@
         </header>
 
         <div class="page-content">
-          <!-- 非对称布局 -->
-          <div class="asymmetric-grid reverse">
-            <!-- 左侧：测评结果 -->
-            <div class="card">
+          <!-- 上下布局 -->
+          <div class="vertical-layout">
+            <!-- 上方：测评结果 -->
+            <div class="card" id="resultsCard" style="display:none">
               <div class="card-header">
                 <div>
                   <h2 class="card-title">测评结果</h2>
@@ -133,11 +133,14 @@
                 <div style="color:var(--text-muted);font-size:12px;margin-top:8px">五维人格画像 · 职业建议</div>
               </div>
               
+              <!-- 雷达图容器 -->
+              <div id="radarChart" style="display:none;margin-bottom:20px;text-align:center"></div>
+              
               <pre class="mono" id="out" style="white-space:pre-wrap;word-break:break-word;margin:0;display:none"></pre>
             </div>
 
-            <!-- 右侧：测评题目 -->
-            <div class="card card-featured">
+            <!-- 下方：测评题目 -->
+            <div class="card card-featured" style="margin-top:32px">
               <div class="card-header">
                 <div>
                   <h2 class="card-title">测评题目</h2>
@@ -160,9 +163,79 @@
                   <pre class="mono" id="result" style="white-space:pre-wrap;word-break:break-word;margin:8px 0 0;font-size:13px"></pre>
                 </div>
 
+                <div class="card" style="margin-bottom:20px;padding:16px">
+                  <div style="font-weight:700;margin-bottom:12px">职业兴趣（勾选 + 兴趣程度）</div>
+                  <div id="careerInterest" class="list"></div>
+                </div>
+
+                <div class="card" style="margin-bottom:20px;padding:16px">
+                  <div style="font-weight:700;margin-bottom:12px">可利用资源（勾选）</div>
+                  <div id="resources" class="list"></div>
+                  <div style="margin-top:10px">
+                    <input type="text" id="resourceOther" placeholder="其他资源（如导师、内推人）" style="width:100%;max-width:360px;padding:10px;border:2px solid var(--border);border-radius:var(--radius-md);font-size:14px" />
+                  </div>
+                </div>
+
+                <div class="card" style="margin-bottom:20px;padding:16px">
+                  <div style="font-weight:700;margin-bottom:16px">约束条件（影响路径选择）</div>
+                  
+                  <div class="form-group" style="margin-bottom:20px;padding:16px;border:2px solid var(--border);border-radius:var(--radius-md);background:#f9fafb">
+                    <label style="font-size:13px;color:var(--text-muted);font-weight:600;margin-bottom:12px;display:block">城市/地域偏好</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:12px">
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="cityPref" value="first_tier" style="display:none" /> 
+                        <span>更希望一线城市/北上广深</span>
+                      </label>
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="cityPref" value="new_first" style="display:none" /> 
+                        <span>新一线/省会城市也可以</span>
+                      </label>
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="cityPref" value="hometown" style="display:none" /> 
+                        <span>更偏向家乡或离家近</span>
+                      </label>
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="cityPref" value="specific" style="display:none" /> 
+                        <span>特定城市</span>
+                      </label>
+                    </div>
+                    <div style="margin-top:12px">
+                      <input type="text" id="specificCity" placeholder="请输入向往的城市地区（例如：杭州、成都等）" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:var(--radius-md);font-size:14px;display:none" />
+                    </div>
+                  </div>
+                  
+                  <div class="form-group" style="margin-bottom:20px;padding:16px;border:2px solid var(--border);border-radius:var(--radius-md);background:#f9fafb">
+                    <label style="font-size:13px;color:var(--text-muted);font-weight:600;margin-bottom:12px;display:block">经济承受能力</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:12px">
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="econRisk" value="can_low_salary" style="display:none" /> 
+                        <span>可接受前 1-2 年薪资一般，换成长空间</span>
+                      </label>
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="econRisk" value="need_stable" style="display:none" /> 
+                        <span>需要尽快有稳定收入，尽量少折腾</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group" style="padding:16px;border:2px solid var(--border);border-radius:var(--radius-md);background:#f9fafb">
+                    <label style="font-size:13px;color:var(--text-muted);font-weight:600;margin-bottom:12px;display:block">时间精力与作息</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:12px">
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="workStyle" value="can_overtime" style="display:none" /> 
+                        <span>可以接受较高强度加班，短期冲刺</span>
+                      </label>
+                      <label class="radio-button" style="padding:10px 16px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;cursor:pointer;transition:all 0.2s ease;">
+                        <input type="radio" name="workStyle" value="need_regular" style="display:none" /> 
+                        <span>更希望作息规律，避免长期高压</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="form-group">
                   <label>补充说明（可选）</label>
-                  <textarea id="note" placeholder="例如：更希望去某个行业/城市，或对某类岗位有强烈偏好" rows="3"></textarea>
+                  <textarea id="note" placeholder="例如：成绩较好但偏内向；更希望去某个行业/城市" rows="3"></textarea>
                 </div>
 
                 <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -217,6 +290,21 @@
       const resultEl = document.getElementById('result');
       const progressEl = document.getElementById('progress');
       const emptyState = document.getElementById('emptyState');
+
+      const CAREER_OPTIONS = [
+        { id: "java", name: "Java 开发" },
+        { id: "frontend", name: "前端开发" },
+        { id: "ai", name: "AI/算法" },
+        { id: "data", name: "大数据" },
+        { id: "test", name: "测试开发" },
+        { id: "product", name: "产品经理" },
+        { id: "pm", name: "项目管理" },
+      ];
+      const RESOURCE_OPTIONS = [
+        { id: "family", name: "家庭行业资源" },
+        { id: "mentor", name: "校内导师" },
+        { id: "referral", name: "实习内推" },
+      ];
 
       const SCALE = [
         { v: 1, t: "1" },
@@ -383,13 +471,271 @@
         });
       }
 
+      const careerInterest = {};
+      const resourcesChecked = {};
+
+      function renderCareerInterest() {
+        const el = document.getElementById("careerInterest");
+        el.innerHTML = "";
+        CAREER_OPTIONS.forEach(opt => {
+          const wrap = document.createElement("div");
+          wrap.className = "list-item";
+          wrap.style.marginBottom = "12px";
+          wrap.style.padding = "12px";
+          wrap.style.border = "2px solid var(--border)";
+          wrap.style.borderRadius = "var(--radius-md)";
+          wrap.style.background = "#f9fafb";
+          wrap.innerHTML =
+            `<label style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer">` +
+            `<input type="checkbox" id="ci-${opt.id}" style="width:18px;height:18px;cursor:pointer" /> ` +
+            `<span style="font-weight:600;flex:1">${escapeHtml(opt.name)}</span>` +
+            `<select id="ci-lvl-${opt.id}" style="width:120px;padding:8px;border:2px solid var(--border);border-radius:var(--radius-md);background:white;font-size:14px;cursor:pointer" disabled><option value="">兴趣程度</option><option value="very">非常</option><option value="fairly">比较</option><option value="somewhat">一般</option></select>` +
+            `</label>`;
+          wrap.querySelector(`#ci-${opt.id}`).addEventListener("change", (e) => {
+            wrap.querySelector(`#ci-lvl-${opt.id}`).disabled = !e.target.checked;
+            if (e.target.checked) {
+              wrap.style.borderColor = "var(--primary)";
+              wrap.style.background = "var(--primary-light)";
+            } else {
+              wrap.style.borderColor = "var(--border)";
+              wrap.style.background = "#f9fafb";
+            }
+          });
+          el.appendChild(wrap);
+        });
+      }
+
+      function renderResources() {
+        const el = document.getElementById("resources");
+        el.innerHTML = "";
+        RESOURCE_OPTIONS.forEach(opt => {
+          const wrap = document.createElement("label");
+          wrap.className = "list-item";
+          wrap.style.display = "flex";
+          wrap.style.alignItems = "center";
+          wrap.style.padding = "12px";
+          wrap.style.border = "2px solid var(--border)";
+          wrap.style.borderRadius = "var(--radius-md)";
+          wrap.style.background = "#f9fafb";
+          wrap.style.cursor = "pointer";
+          wrap.style.marginBottom = "8px";
+          wrap.innerHTML = `<input type="checkbox" id="res-${opt.id}" style="width:18px;height:18px;cursor:pointer" /> <span style="font-weight:600">${escapeHtml(opt.name)}</span>`;
+          wrap.querySelector(`input`).addEventListener("change", (e) => {
+            if (e.target.checked) {
+              wrap.style.borderColor = "var(--primary)";
+              wrap.style.background = "var(--primary-light)";
+            } else {
+              wrap.style.borderColor = "var(--border)";
+              wrap.style.background = "#f9fafb";
+            }
+          });
+          el.appendChild(wrap);
+        });
+      }
+
+      function collectCareerInterest() {
+        const out = {};
+        CAREER_OPTIONS.forEach(opt => {
+          const cb = document.getElementById(`ci-${opt.id}`);
+          const sel = document.getElementById(`ci-lvl-${opt.id}`);
+          if (cb && cb.checked && sel) out[opt.name] = sel.value || "一般";
+        });
+        return out;
+      }
+
+      function collectResources() {
+        const out = [];
+        RESOURCE_OPTIONS.forEach(opt => {
+          const cb = document.getElementById(`res-${opt.id}`);
+          if (cb && cb.checked) out.push(opt.name);
+        });
+        const other = (document.getElementById("resourceOther") || {}).value || "";
+        if (other.trim()) out.push("其他：" + other.trim());
+        return out;
+      }
+
+      function collectConstraints() {
+        const cityPref = (document.querySelector("input[name='cityPref']:checked") || {}).value || "";
+        const econRisk = (document.querySelector("input[name='econRisk']:checked") || {}).value || "";
+        const workStyle = (document.querySelector("input[name='workStyle']:checked") || {}).value || "";
+        const specificCity = document.getElementById("specificCity").value.trim();
+        return { 
+          city_preference: cityPref, 
+          specific_city: specificCity, 
+          econ_risk: econRisk, 
+          work_style: workStyle 
+        };
+      }
+
+      renderCareerInterest();
+      renderResources();
       renderQuestions();
       updateProgress();
+      
+      // 处理自定义单选按钮
+      document.querySelectorAll('.radio-button').forEach(button => {
+        button.addEventListener('click', function() {
+          const radio = this.querySelector('input[type="radio"]');
+          const name = radio.name;
+          
+          // 清除同组其他按钮的选中状态
+          document.querySelectorAll(`input[name="${name}"]`).forEach(input => {
+            const parent = input.closest('.radio-button');
+            if (parent) {
+              parent.style.borderColor = 'var(--border)';
+              parent.style.background = 'white';
+              parent.style.transform = 'none';
+            }
+          });
+          
+          // 设置当前按钮为选中状态
+          radio.checked = true;
+          this.style.borderColor = 'var(--primary)';
+          this.style.background = 'var(--primary-light)';
+          this.style.transform = 'translateY(-2px)';
+          
+          // 处理特定城市输入框的显示/隐藏
+          if (name === 'cityPref') {
+            const specificCityInput = document.getElementById('specificCity');
+            if (radio.value === 'specific') {
+              specificCityInput.style.display = 'block';
+            } else {
+              specificCityInput.style.display = 'none';
+            }
+          }
+        });
+      });
+
+      // 绘制雷达图函数
+      function drawRadarChart(scores) {
+        const container = document.getElementById('radarChart');
+        container.style.display = 'block';
+        
+        // 自适应容器宽度，确保不影响布局比例
+        const containerWidth = container.clientWidth || 300;
+        const width = Math.min(containerWidth, 300);
+        const height = width;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = width * 0.4;
+        
+        // 五维数据
+        const dimensions = ["O", "C", "E", "A", "N"];
+        const labels = ["开放性", "尽责性", "外向性", "宜人性", "神经质"];
+        const angleStep = (2 * Math.PI) / dimensions.length;
+        
+        // 清空容器
+        container.innerHTML = '';
+        
+        // 创建SVG元素
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        container.appendChild(svg);
+        
+        // 绘制网格
+        for (let level = 1; level <= 5; level++) {
+          const levelRadius = (radius / 5) * level;
+          const points = [];
+          for (let i = 0; i < dimensions.length; i++) {
+            const angle = i * angleStep - Math.PI / 2;
+            const x = centerX + levelRadius * Math.cos(angle);
+            const y = centerY + levelRadius * Math.sin(angle);
+            points.push(`${x},${y}`);
+          }
+          points.push(points[0]); // 闭合路径
+          
+          const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          polygon.setAttribute('points', points.join(' '));
+          polygon.setAttribute('fill', 'none');
+          polygon.setAttribute('stroke', '#e0e0e0');
+          polygon.setAttribute('stroke-width', '1');
+          svg.appendChild(polygon);
+        }
+        
+        // 绘制轴线
+        for (let i = 0; i < dimensions.length; i++) {
+          const angle = i * angleStep - Math.PI / 2;
+          const x1 = centerX;
+          const y1 = centerY;
+          const x2 = centerX + radius * Math.cos(angle);
+          const y2 = centerY + radius * Math.sin(angle);
+          
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+          line.setAttribute('stroke', '#e0e0e0');
+          line.setAttribute('stroke-width', '1');
+          svg.appendChild(line);
+        }
+        
+        // 绘制数据点和多边形
+        const dataPoints = [];
+        for (let i = 0; i < dimensions.length; i++) {
+          const dim = dimensions[i];
+          const score = scores[dim] || 0;
+          const normalizedScore = score / 100;
+          const angle = i * angleStep - Math.PI / 2;
+          const pointRadius = radius * normalizedScore;
+          const x = centerX + pointRadius * Math.cos(angle);
+          const y = centerY + pointRadius * Math.sin(angle);
+          dataPoints.push(`${x},${y}`);
+          
+          // 绘制数据点
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', x);
+          circle.setAttribute('cy', y);
+          circle.setAttribute('r', '5');
+          circle.setAttribute('fill', 'var(--primary)');
+          circle.setAttribute('stroke', 'white');
+          circle.setAttribute('stroke-width', '2');
+          svg.appendChild(circle);
+        }
+        
+        // 绘制数据多边形
+        if (dataPoints.length > 0) {
+          dataPoints.push(dataPoints[0]); // 闭合路径
+          const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          polygon.setAttribute('points', dataPoints.join(' '));
+          polygon.setAttribute('fill', 'var(--primary)');
+          polygon.setAttribute('fill-opacity', '0.3');
+          polygon.setAttribute('stroke', 'var(--primary)');
+          polygon.setAttribute('stroke-width', '2');
+          svg.appendChild(polygon);
+        }
+        
+        // 添加标签
+        for (let i = 0; i < dimensions.length; i++) {
+          const angle = i * angleStep - Math.PI / 2;
+          const labelRadius = radius + 20;
+          const x = centerX + labelRadius * Math.cos(angle);
+          const y = centerY + labelRadius * Math.sin(angle);
+          
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', x);
+          text.setAttribute('y', y);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('dominant-baseline', 'central');
+          text.setAttribute('font-size', '12');
+          text.setAttribute('fill', 'var(--text)');
+          text.textContent = labels[i];
+          svg.appendChild(text);
+        }
+      }
 
       // 在左侧显示最终结果的函数
       function displayFinalResult(scores, summary) {
+        // 显示结果卡片
+        document.getElementById('resultsCard').style.display = 'block';
+        
         emptyState.style.display = 'none';
         out.style.display = 'block';
+        
+        // 绘制雷达图
+        drawRadarChart(scores);
         
         const lines = [];
         lines.push("五维结果（0-100）：");
@@ -404,6 +750,72 @@
           lines.push("");
           lines.push("职业环境建议：");
           for (const t of summary.env) lines.push(`- ${t}`);
+        }
+        
+        // 添加职业兴趣
+        const careerInterests = collectCareerInterest();
+        if (Object.keys(careerInterests).length > 0) {
+          lines.push("");
+          lines.push("职业兴趣：");
+          for (const [interest, level] of Object.entries(careerInterests)) {
+            const levelText = {
+              'very': '非常',
+              'fairly': '比较',
+              'somewhat': '一般'
+            }[level] || level;
+            lines.push(`- ${interest}（${levelText}）`);
+          }
+        }
+        
+        // 添加可利用资源
+        const resources = collectResources();
+        if (resources.length > 0) {
+          lines.push("");
+          lines.push("可利用资源：");
+          for (const resource of resources) {
+            lines.push(`- ${resource}`);
+          }
+        }
+        
+        // 添加约束条件
+        const constraints = collectConstraints();
+        const constraintLines = [];
+        
+        if (constraints.city_preference) {
+          const cityText = {
+            'first_tier': '一线城市/北上广深',
+            'new_first': '新一线/省会城市',
+            'hometown': '家乡或离家近',
+            'specific': '特定城市'
+          }[constraints.city_preference] || constraints.city_preference;
+          constraintLines.push(`城市偏好：${cityText}`);
+          if (constraints.city_preference === 'specific' && constraints.specific_city) {
+            constraintLines.push(`特定城市：${constraints.specific_city}`);
+          }
+        }
+        
+        if (constraints.econ_risk) {
+          const econText = {
+            'can_low_salary': '可接受前1-2年薪资一般',
+            'need_stable': '需要尽快有稳定收入'
+          }[constraints.econ_risk] || constraints.econ_risk;
+          constraintLines.push(`经济承受：${econText}`);
+        }
+        
+        if (constraints.work_style) {
+          const workText = {
+            'can_overtime': '可以接受较高强度加班',
+            'need_regular': '更希望作息规律'
+          }[constraints.work_style] || constraints.work_style;
+          constraintLines.push(`工作风格：${workText}`);
+        }
+        
+        if (constraintLines.length > 0) {
+          lines.push("");
+          lines.push("约束条件：");
+          for (const line of constraintLines) {
+            lines.push(`- ${line}`);
+          }
         }
         
         out.textContent = lines.join("\n");
@@ -423,12 +835,21 @@
               answers,
               scores,
               summary,
+              career_interest: collectCareerInterest(),
+              resources: collectResources(),
+              constraints: collectConstraints(),
               note: document.getElementById("note").value.trim(),
             }),
           });
           msg.textContent = "已保存。";
           // 在左侧显示格式化结果
           displayFinalResult(scores, summary);
+          
+          // 滚动到顶部，让用户立即看到测评结果
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
         } catch (e) {
           msg.textContent = "失败：" + (e.message || String(e));
         }
