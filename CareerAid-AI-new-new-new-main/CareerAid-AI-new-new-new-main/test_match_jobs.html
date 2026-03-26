@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>测试 match_jobs 接口</title>
+    <link rel="stylesheet" href="static/style.css" />
+  </head>
+  <body>
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1>测试 match_jobs 接口</h1>
+      <div style="margin-bottom: 20px;">
+        <label>目标岗位：</label>
+        <input type="text" id="goal" value="测试" style="width: 100%; padding: 10px; margin-top: 5px;" />
+      </div>
+      <button id="testBtn" style="padding: 10px 20px; background-color: #b4d61f; border: 2px solid #000; border-radius: 8px; cursor: pointer;">测试 match_jobs 接口</button>
+      <div id="result" style="margin-top: 20px; padding: 15px; border: 2px solid #000; border-radius: 8px; background-color: #f8fff0;"></div>
+    </div>
+
+    <script src="static/app.js"></script>
+    <script>
+      document.getElementById('testBtn').addEventListener('click', async () => {
+        const resultEl = document.getElementById('result');
+        resultEl.textContent = '测试中...';
+        
+        try {
+          // 先登录获取 token
+          const loginData = await CareerAid.apiFetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: 'admin', password: '123456' })
+          });
+          CareerAid.setToken(loginData.token);
+          
+          // 然后调用 match_jobs 接口
+          const goal = document.getElementById('goal').value;
+          const data = await CareerAid.apiFetch('/match_jobs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ goal })
+          });
+          
+          resultEl.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          resultEl.textContent = '错误：' + (e.message || String(e));
+        }
+      });
+    </script>
+  </body>
+</html>
