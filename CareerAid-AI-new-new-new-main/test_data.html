@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试数据传递</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px 0; }
+    pre { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>测试数据传递</h1>
+  <button id="testBtn">测试数据传递</button>
+  <div id="result"></div>
+
+  <script>
+    // 模拟匹配数据
+    const testMatchData = {
+      job_id: 1,
+      job_title: "Java后端开发工程师",
+      industry: "互联网",
+      salary: "15000-25000",
+      score: 22.6,
+      dimension_scores: {
+        "专业技能": 40,
+        "证书要求": 0,
+        "创新能力": 40,
+        "学习能力": 40,
+        "抗压能力": 40,
+        "沟通能力": 40
+      },
+      dimension_scores_4: {
+        "基础要求": 40,
+        "职业技能": 40,
+        "职业素养": 40,
+        "发展潜力": 40
+      },
+      gap_analysis: {
+        missing_skills: ["Java", "Spring Boot", "MySQL"],
+        suggestions: [
+          "建议学习Java核心技术",
+          "建议学习Spring Boot框架",
+          "建议学习数据库知识"
+        ]
+      },
+      online_result: {
+        score: 0,
+        summary: "在线大模型匹配结果"
+      },
+      offline_result: {
+        score: 22.6,
+        summary: "离线算法匹配结果",
+        dimension_scores: {
+          "基础要求": 40,
+          "职业技能": 40,
+          "职业素养": 40,
+          "发展潜力": 40
+        },
+        ai_enhanced: true
+      }
+    };
+
+    // 测试按钮点击事件
+    document.getElementById('testBtn').addEventListener('click', () => {
+      const matchData = encodeURIComponent(JSON.stringify(testMatchData));
+      window.location.href = `analysis.html?match=${matchData}`;
+    });
+  </script>
+</body>
+</html>
